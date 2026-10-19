@@ -1,9 +1,13 @@
 "use strict";
 
-const ROWS = 9;
-const COLUMNS = 9;
-const MINE_COUNT = 10;
+const DIFFICULTIES = {
+  beginner: { rows: 9, columns: 9, mines: 10 },
+  intermediate: { rows: 16, columns: 16, mines: 40 },
+  advanced: { rows: 16, columns: 30, mines: 99 },
+};
 
+const gameShellElement = document.querySelector(".game-shell");
+const difficultyElement = document.querySelector("#difficulty");
 const boardElement = document.querySelector("#board");
 const mineCountElement = document.querySelector("#mine-count");
 const timerElement = document.querySelector("#timer");
@@ -11,6 +15,9 @@ const gameFaceElement = document.querySelector("#game-face");
 const messageElement = document.querySelector("#game-message");
 const restartButton = document.querySelector("#restart");
 
+let rows = DIFFICULTIES.beginner.rows;
+let columns = DIFFICULTIES.beginner.columns;
+let mineCount = DIFFICULTIES.beginner.mines;
 let cells = [];
 let firstClick = true;
 let gameState = "ready";
@@ -34,15 +41,23 @@ function createCell(row, column) {
 function resetGame() {
   window.clearInterval(timerId);
   timerId = null;
-  cells = Array.from({ length: ROWS }, (_, row) =>
-    Array.from({ length: COLUMNS }, (_, column) => createCell(row, column)),
+  const difficulty = difficultyElement.value;
+  const settings = DIFFICULTIES[difficulty];
+  rows = settings.rows;
+  columns = settings.columns;
+  mineCount = settings.mines;
+  gameShellElement.className = `game-shell difficulty-${difficulty}`;
+  boardElement.setAttribute("aria-label", `${rows}행 ${columns}열 지뢰찾기 보드`);
+  boardElement.style.setProperty("--columns", columns);
+  cells = Array.from({ length: rows }, (_, row) =>
+    Array.from({ length: columns }, (_, column) => createCell(row, column)),
   );
   firstClick = true;
   gameState = "ready";
   elapsedSeconds = 0;
   flagsPlaced = 0;
   openedSafeCells = 0;
-  mineCountElement.value = formatCounter(MINE_COUNT);
+  mineCountElement.value = formatCounter(mineCount);
   timerElement.value = formatTimer(0);
   gameFaceElement.textContent = "🙂";
   messageElement.textContent = "칸을 열어 게임을 시작하세요.";
@@ -68,9 +83,9 @@ function getNeighbors(row, column) {
       const neighborColumn = column + columnOffset;
       if (
         neighborRow >= 0 &&
-        neighborRow < ROWS &&
+        neighborRow < rows &&
         neighborColumn >= 0 &&
-        neighborColumn < COLUMNS
+        neighborColumn < columns
       ) {
         neighbors.push(cells[neighborRow][neighborColumn]);
       }
@@ -89,7 +104,7 @@ function placeMines(safeRow, safeColumn) {
     (cell) => !safeCells.has(`${cell.row},${cell.column}`),
   );
 
-  for (let index = 0; index < MINE_COUNT; index += 1) {
+  for (let index = 0; index < mineCount; index += 1) {
     const randomIndex = Math.floor(Math.random() * availableCells.length);
     const [mine] = availableCells.splice(randomIndex, 1);
     mine.isMine = true;
@@ -132,7 +147,7 @@ function revealCell(row, column) {
   }
 
   openSafeCell(cell);
-  if (openedSafeCells === ROWS * COLUMNS - MINE_COUNT) {
+  if (openedSafeCells === rows * columns - mineCount) {
     finishGame("won");
   }
 }
@@ -171,7 +186,7 @@ function toggleMark(row, column) {
     cell.mark = "none";
   }
 
-  mineCountElement.value = formatCounter(MINE_COUNT - flagsPlaced);
+  mineCountElement.value = formatCounter(mineCount - flagsPlaced);
   renderBoard();
 }
 
@@ -225,13 +240,16 @@ function renderBoard() {
         button.classList.add("questioned");
       }
 
-      if (gameState === "lost" && cell.isMine && !cell.isExploded) {
+      if (gameState === "lost" && cell.isMine) {
         button.classList.add("revealed", "mine");
         button.textContent = "💣";
+        if (cell.isExploded) button.classList.add("exploded");
+        button.setAttribute("aria-label", cell.isExploded ? "폭발한 지뢰" : "지뢰");
       }
       if (gameState === "lost" && cell.mark === "flag" && !cell.isMine) {
         button.classList.add("wrong-flag");
         button.textContent = "❌";
+        button.setAttribute("aria-label", "잘못 표시한 깃발");
       }
 
       fragment.append(button);
@@ -268,5 +286,6 @@ boardElement.addEventListener("contextmenu", (event) => {
 });
 
 restartButton.addEventListener("click", resetGame);
+difficultyElement.addEventListener("change", resetGame);
 
 resetGame();
