@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f3f6f3">
+    <title>지뢰찾기</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <main class="game" aria-labelledby="game-title">
+      <header class="game-header">
+        <p class="eyebrow">MINESWEEPER</p>
+        <h1 id="game-title">지뢰찾기</h1>
+        <p class="instructions">안전한 칸을 열고, 지뢰가 있는 곳에 깃발을 꽂으세요.</p>
+      </header>
+
+      <section class="game-panel" aria-label="지뢰찾기 게임">
+        <div class="game-toolbar">
+          <div class="counter" aria-label="남은 지뢰 수">
+            <span class="counter-icon" aria-hidden="true">🚩</span>
+            <span id="mine-count">10</span>
+          </div>
+          <button class="restart-button" id="restart" type="button" aria-label="새 게임 시작">🙂</button>
+          <div class="counter timer" aria-label="경과 시간">
+            <span class="counter-icon" aria-hidden="true">⏱</span>
+            <span id="timer">000</span>
+          </div>
+        </div>
+
+        <div class="board" id="board" role="grid" aria-label="9 곱하기 9 지뢰찾기 격자"></div>
+        <p class="game-message" id="message" role="status" aria-live="polite">게임을 시작하세요!</p>
+      </section>
+
+      <footer class="game-footer">
+        <span><kbd>좌클릭</kbd> 칸 열기</span>
+        <span><kbd>우클릭</kbd> 깃발 표시</span>
+      </footer>
+    </main>
+  </body>
+</html>
