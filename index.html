@@ -3,25 +3,15 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#e8edf5">
+    <meta name="theme-color" content="#c0c0c0">
     <title>지뢰찾기</title>
     <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
   </head>
   <body>
     <main class="game-shell">
-      <div class="window-titlebar" aria-hidden="true">
-        <span class="window-controls">
-          <span class="window-control close"></span>
-          <span class="window-control minimize"></span>
-          <span class="window-control maximize"></span>
-        </span>
-        <span class="window-title">Minesweeper</span>
-        <span class="window-controls-spacer"></span>
-      </div>
       <header class="game-header">
         <div>
-          <p class="eyebrow">CLASSIC PUZZLE</p>
           <h1>지뢰찾기</h1>
           <p class="subtitle">숫자를 단서 삼아 지뢰를 모두 찾아보세요.</p>
         </div>
@@ -32,25 +22,41 @@
               <option value="beginner">초급</option>
               <option value="intermediate">중급</option>
               <option value="advanced">고급</option>
+              <option value="custom">커스텀</option>
             </select>
           </label>
-          <button class="restart-button" id="restart" type="button" aria-label="새 게임 시작">
-            <span aria-hidden="true">↻</span>
-            <span>새 게임</span>
-          </button>
         </div>
       </header>
 
+      <form class="custom-settings" id="custom-settings" hidden>
+        <label>
+          <span>높이</span>
+          <input id="custom-rows" type="number" min="5" max="30" value="9" required>
+        </label>
+        <label>
+          <span>너비</span>
+          <input id="custom-columns" type="number" min="5" max="30" value="9" required>
+        </label>
+        <label>
+          <span>지뢰</span>
+          <input id="custom-mines" type="number" min="1" max="891" value="10" required>
+        </label>
+        <button class="apply-custom-button" type="submit">적용</button>
+        <p class="custom-error" id="custom-error" role="alert"></p>
+      </form>
+
       <section class="game-panel" aria-label="지뢰찾기 게임">
         <div class="status-bar" aria-live="polite">
-          <div class="status-item">
+          <div class="counter-group">
             <span class="status-label">남은 지뢰</span>
-            <output class="status-value" id="mine-count">010</output>
+            <output class="status-value digit-display" id="mine-count">010</output>
           </div>
-          <div class="game-face" id="game-face" aria-hidden="true">🙂</div>
-          <div class="status-item timer-item">
+          <button class="game-face" id="restart" type="button" aria-label="새 게임 시작">
+            <span id="game-face" aria-hidden="true">🙂</span>
+          </button>
+          <div class="counter-group timer-item">
             <span class="status-label">시간</span>
-            <output class="status-value" id="timer">000</output>
+            <output class="status-value digit-display" id="timer">000</output>
           </div>
         </div>
 
@@ -64,6 +70,7 @@
       <footer class="game-help">
         <span><kbd>클릭</kbd> 칸 열기</span>
         <span><kbd>우클릭</kbd> 없음 → 🚩 → ❓ → 없음</span>
+        <span><kbd>첫 클릭</kbd> 안전</span>
       </footer>
     </main>
   </body>

@@ -6,8 +6,14 @@ const DIFFICULTIES = {
   advanced: { rows: 16, columns: 30, mines: 99 },
 };
 
+const customSettings = { rows: 9, columns: 9, mines: 10 };
 const gameShellElement = document.querySelector(".game-shell");
 const difficultyElement = document.querySelector("#difficulty");
+const customSettingsElement = document.querySelector("#custom-settings");
+const customRowsElement = document.querySelector("#custom-rows");
+const customColumnsElement = document.querySelector("#custom-columns");
+const customMinesElement = document.querySelector("#custom-mines");
+const customErrorElement = document.querySelector("#custom-error");
 const boardElement = document.querySelector("#board");
 const mineCountElement = document.querySelector("#mine-count");
 const timerElement = document.querySelector("#timer");
@@ -42,11 +48,12 @@ function resetGame() {
   window.clearInterval(timerId);
   timerId = null;
   const difficulty = difficultyElement.value;
-  const settings = DIFFICULTIES[difficulty];
+  const settings = difficulty === "custom" ? customSettings : DIFFICULTIES[difficulty];
   rows = settings.rows;
   columns = settings.columns;
   mineCount = settings.mines;
   gameShellElement.className = `game-shell difficulty-${difficulty}`;
+  customSettingsElement.hidden = difficulty !== "custom";
   boardElement.setAttribute("aria-label", `${rows}행 ${columns}열 지뢰찾기 보드`);
   boardElement.style.setProperty("--columns", columns);
   cells = Array.from({ length: rows }, (_, row) =>
@@ -271,6 +278,15 @@ function getCellDescription(cell) {
   return `닫힌 칸 ${cell.row + 1}행 ${cell.column + 1}열`;
 }
 
+function updateCustomMineLimit() {
+  if (!customRowsElement.checkValidity() || !customColumnsElement.checkValidity()) return;
+  const maxMines = Number(customRowsElement.value) * Number(customColumnsElement.value) - 9;
+  customMinesElement.max = String(maxMines);
+  customErrorElement.textContent = Number(customMinesElement.value) > maxMines
+    ? `첫 클릭 주변을 비우려면 지뢰를 최대 ${maxMines}개까지 설정할 수 있습니다.`
+    : "";
+}
+
 boardElement.addEventListener("click", (event) => {
   const button = event.target.closest(".cell");
   if (!button || !boardElement.contains(button)) return;
@@ -286,6 +302,43 @@ boardElement.addEventListener("contextmenu", (event) => {
 });
 
 restartButton.addEventListener("click", resetGame);
-difficultyElement.addEventListener("change", resetGame);
+difficultyElement.addEventListener("change", () => {
+  if (difficultyElement.value === "custom") {
+    customRowsElement.value = String(customSettings.rows);
+    customColumnsElement.value = String(customSettings.columns);
+    customMinesElement.value = String(customSettings.mines);
+    customMinesElement.max = String(customSettings.rows * customSettings.columns - 9);
+    customErrorElement.textContent = "";
+  }
+  resetGame();
+});
+customRowsElement.addEventListener("input", updateCustomMineLimit);
+customColumnsElement.addEventListener("input", updateCustomMineLimit);
+customMinesElement.addEventListener("input", updateCustomMineLimit);
+customSettingsElement.addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (!customSettingsElement.reportValidity()) {
+    customErrorElement.textContent = "";
+    return;
+  }
+
+  const nextSettings = {
+    rows: Number(customRowsElement.value),
+    columns: Number(customColumnsElement.value),
+    mines: Number(customMinesElement.value),
+  };
+  const maxMines = nextSettings.rows * nextSettings.columns - 9;
+  if (nextSettings.mines > maxMines) {
+    customErrorElement.textContent =
+      `첫 클릭 주변을 비우려면 지뢰를 최대 ${maxMines}개까지 설정할 수 있습니다.`;
+    customMinesElement.max = String(Math.max(1, maxMines));
+    return;
+  }
+
+  customErrorElement.textContent = "";
+  Object.assign(customSettings, nextSettings);
+  customMinesElement.max = String(nextSettings.rows * nextSettings.columns - 9);
+  resetGame();
+});
 
 resetGame();
